@@ -69,7 +69,7 @@ namespace AToken:
         let (caller_address) = get_caller_address()
         let (pool) = POOL()
         with_attr error_message("Caller address should be {pool}"):
-            assert caller_address = pool
+            assert pool = caller_address
         end
         return ()
     end
@@ -127,6 +127,7 @@ namespace AToken:
     func mint{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         caller : felt, on_behalf_of : felt, amount : Uint256, index : Uint256
     ):
+        assert_only_pool()
         ERC20._mint(on_behalf_of, amount)
         return ()
     end
@@ -144,6 +145,17 @@ namespace AToken:
     #     end
     #     return ()
     # end
+
+    func burn{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        from_ : felt, receiver_or_underlying : felt, amount : Uint256, index : Uint256
+    ) -> (success : felt):
+        alloc_locals
+        assert_only_pool()
+        let (local underlying) = UNDERLYING_ASSET_ADDRESS()
+        ERC20._burn(from_, amount)
+        IERC20.transfer(underlying, receiver_or_underlying, amount)
+        return (TRUE)
+    end
 
     # func mint_to_treasury(amount : Uint256, index : Uint256) {
     #     assert_only_pool()
