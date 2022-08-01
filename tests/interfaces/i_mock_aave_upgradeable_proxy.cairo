@@ -3,7 +3,7 @@
 %lang starknet
 
 @contract_interface
-namespace IBasicProxyImpl:
+namespace IMockAaveUpgradeableProxy:
     func get_version() -> (val : felt):
     end
 
