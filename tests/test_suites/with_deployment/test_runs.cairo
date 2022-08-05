@@ -12,7 +12,8 @@ from tests.test_suites.test_specs.pool_supply_withdraw_spec import TestPoolSuppl
 from tests.test_suites.test_specs.pool_addresses_provider_spec import (
     TestPoolAddressesProviderDeployed,
 )
-from tests.test_suites.test_specs.a_token_modifiers import ATokenModifier
+from tests.test_suites.test_specs.a_token_modifiers_spec import ATokenModifier
+from tests.test_suites.test_specs.acl_manager_spec import TestACLManager, PRANK_ADMIN_ADDRESS
 
 # @notice setup hook for the test execution. It deploys the contracts
 # saves the Starknet state at the end of this function. All test cases will be executed
@@ -28,7 +29,7 @@ func __setup__{syscall_ptr : felt*, range_check_ptr}():
 
             return int.from_bytes(text.encode(), "big")
             
-        context.pool = deploy_contract("./contracts/protocol/pool/pool.cairo",{"provider":0}).contract_address
+        # context.pool = deploy_contract("./contracts/protocol/pool/pool.cairo",{"provider":0}).contract_address
 
         #deploy DAI/DAI, owner is deployer, supply is 0
         context.dai = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc20/presets/ERC20Mintable.cairo",
@@ -37,11 +38,11 @@ func __setup__{syscall_ptr : felt*, range_check_ptr}():
         #deploy WETH/WETH, owner is deployer, supply is 0
         context.weth = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc20/presets/ERC20Mintable.cairo",  {"name":str_to_felt("WETH"),"symbol":str_to_felt("WETH"),"decimals":18,"initial_supply":{"low":0,"high":0},"recipient":ids.deployer,"owner": ids.deployer}).contract_address 
 
-         #deploy aDai/aDAI, owner is pool, supply is 0
-        context.aDAI = deploy_contract("./contracts/protocol/tokenization/a_token.cairo", {"pool":context.pool,"treasury":1631863113,"underlying_asset":context.dai,"incentives_controller":43232, "a_token_decimals":18,"a_token_name":str_to_felt("aDAI"),"a_token_symbol":str_to_felt("aDAI")}).contract_address
+        #  #deploy aDai/aDAI, owner is pool, supply is 0
+        # context.aDAI = deploy_contract("./contracts/protocol/tokenization/a_token.cairo", {"pool":context.pool,"treasury":1631863113,"underlying_asset":context.dai,"incentives_controller":43232, "a_token_decimals":18,"a_token_name":str_to_felt("aDAI"),"a_token_symbol":str_to_felt("aDAI")}).contract_address
 
-         #deploy aWETH/aWETH, owner is pool, supply is 0
-        context.aWETH = deploy_contract("./contracts/protocol/tokenization/a_token.cairo", {"pool":context.pool,"treasury":1631863113,"underlying_asset":context.weth,"incentives_controller":43232, "a_token_decimals":18,"a_token_name":str_to_felt("aWETH"),"a_token_symbol":str_to_felt("aWETH")}).contract_address
+        #  #deploy aWETH/aWETH, owner is pool, supply is 0
+        # context.aWETH = deploy_contract("./contracts/protocol/tokenization/a_token.cairo", {"pool":context.pool,"treasury":1631863113,"underlying_asset":context.weth,"incentives_controller":43232, "a_token_decimals":18,"a_token_name":str_to_felt("aWETH"),"a_token_symbol":str_to_felt("aWETH")}).contract_address
 
 
         #declare class implementation of basic_proxy_impl
@@ -64,6 +65,10 @@ func __setup__{syscall_ptr : felt*, range_check_ptr}():
         context.pool_addresses_provider = deploy(prepared_pool_addresses_provider).contract_address
         stop_prank()
 
+        # To declare acl_manager, we need pool_addresses_provider. We use the one declared above
+        stop_mock_admin = mock_call(context.pool_addresses_provider, "get_ACL_admin", [ids.PRANK_ADMIN_ADDRESS])
+        context.acl = deploy_contract("./contracts/protocol/configuration/acl_manager.cairo", {"provider":context.pool_addresses_provider}).contract_address
+        stop_mock_admin()
         context.deployer = ids.deployer
     %}
     tempvar pool
@@ -72,17 +77,112 @@ func __setup__{syscall_ptr : felt*, range_check_ptr}():
     tempvar aDAI
     tempvar aWETH
     tempvar proxy
-    %{ ids.pool = context.pool %}
-    %{ ids.dai = context.dai %}
-    %{ ids.weth= context.weth %}
-    %{ ids.aDAI = context.aDAI %}
-    %{ ids.aWETH = context.aWETH %}
+    tempvar acl
+    tempvar pool_addresses_provider
+    # %{ ids.pool = context.pool %}
+    # %{ ids.dai = context.dai %}
+    # %{ ids.weth= context.weth %}
+    # %{ ids.aDAI = context.aDAI %}
+    # %{ ids.aWETH = context.aWETH %}
     %{ ids.proxy = context.proxy %}
+    %{ ids.acl = context.acl %}
+    %{ ids.pool_addresses_provider = context.pool_addresses_provider %}
 
-    IPool.init_reserve(pool, dai, aDAI)
-    IPool.init_reserve(pool, weth, aWETH)
+    # IPool.init_reserve(pool, dai, aDAI)
+    # IPool.init_reserve(pool, weth, aWETH)
     return ()
 end
+
+@external
+func test_grant_pool_admin_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    ):
+    TestACLManager.test_grant_pool_admin_role()
+    return ()
+end
+
+@external
+func test_grant_emergency_admin_role{
+    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+}():
+    TestACLManager.test_grant_emergency_admin_role()
+    return ()
+end
+
+@external
+func test_grant_risk_admin_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    ):
+    TestACLManager.test_grant_risk_admin_role()
+    return ()
+end
+
+@external
+func test_grant_bridge_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
+    TestACLManager.test_grant_bridge_role()
+    return ()
+end
+
+@external
+func test_grant_asset_listing_admin_role{
+    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+}():
+    TestACLManager.test_grant_asset_listing_admin_role()
+    return ()
+end
+
+@external
+func test_revoke_flash_borrower{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    ):
+    TestACLManager.test_revoke_flash_borrower()
+    return ()
+end
+
+@external
+func test_revoke_flash_borrow_admin{
+    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+}():
+    TestACLManager.test_revoke_flash_borrow_admin()
+    return ()
+end
+
+@external
+func test_revoke_pool_admin_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    ):
+    TestACLManager.test_revoke_pool_admin_role()
+    return ()
+end
+
+@external
+func test_revoke_emergency_admin_role{
+    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+}():
+    TestACLManager.test_revoke_emergency_admin_role()
+    return ()
+end
+@external
+func test_revoke_risk_admin_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    ):
+    TestACLManager.test_revoke_risk_admin_role()
+    return ()
+end
+@external
+func test_revoke_bridge_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
+    TestACLManager.test_revoke_bridge_role()
+    return ()
+end
+@external
+func test_revoke_asset_listing_admin_role{
+    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+}():
+    TestACLManager.test_revoke_asset_listing_admin_role()
+    return ()
+end
+
+# func test_default_admin_role{
+#     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+# }():
+#     TestACLManager.test_default_admin_role()
+#     return ()
+# end
 
 #
 # Test cases imported from test specifications
@@ -98,178 +198,178 @@ end
 #     return ()
 # end
 
-@external
-func test_user_2_repays_debts_drop_DAI_reserve_should_fail{
-    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
-}():
-    TestPoolDropDeployed.test_user_2_repays_debts_drop_DAI_reserve_should_fail()
-    return ()
-end
+# @external
+# func test_user_2_repays_debts_drop_DAI_reserve_should_fail{
+#     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+# }():
+#     TestPoolDropDeployed.test_user_2_repays_debts_drop_DAI_reserve_should_fail()
+#     return ()
+# end
 
-# test_pool_drop_3
-@external
-func test_user_1_withdraw_DAI_drop_DAI_reserve_should_succeed{
-    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
-}():
-    TestPoolDropDeployed.test_user_1_withdraw_DAI_drop_DAI_reserve_should_succeed()
-    return ()
-end
+# # test_pool_drop_3
+# @external
+# func test_user_1_withdraw_DAI_drop_DAI_reserve_should_succeed{
+#     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+# }():
+#     TestPoolDropDeployed.test_user_1_withdraw_DAI_drop_DAI_reserve_should_succeed()
+#     return ()
+# end
 
-@external
-func test_drop_an_asset_that_is_not_a_listed_reserve_should_fail{
-    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
-}():
-    TestPoolDropDeployed.test_drop_an_asset_that_is_not_a_listed_reserve_should_fail()
-    return ()
-end
+# @external
+# func test_drop_an_asset_that_is_not_a_listed_reserve_should_fail{
+#     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+# }():
+#     TestPoolDropDeployed.test_drop_an_asset_that_is_not_a_listed_reserve_should_fail()
+#     return ()
+# end
 
-@external
-func test_dropping_zero_address_should_fail{
-    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
-}():
-    TestPoolDropDeployed.test_dropping_zero_address_should_fail()
-    return ()
-end
+# @external
+# func test_dropping_zero_address_should_fail{
+#     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+# }():
+#     TestPoolDropDeployed.test_dropping_zero_address_should_fail()
+#     return ()
+# end
 
-@external
-func test_get_address_of_reserve_by_id{
-    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
-}():
-    TestPoolGetReserveAddressByIdDeployed.test_get_address_of_reserve_by_id()
-    return ()
-end
+# @external
+# func test_get_address_of_reserve_by_id{
+#     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+# }():
+#     TestPoolGetReserveAddressByIdDeployed.test_get_address_of_reserve_by_id()
+#     return ()
+# end
 
-@external
-func test_get_max_number_reserves{
-    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
-}():
-    TestPoolGetReserveAddressByIdDeployed.test_get_address_of_reserve_by_id()
-    return ()
-end
+# @external
+# func test_get_max_number_reserves{
+#     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+# }():
+#     TestPoolGetReserveAddressByIdDeployed.test_get_address_of_reserve_by_id()
+#     return ()
+# end
 
-@external
-func test_pool_supply_withdraw_1{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-    ):
-    TestPoolSupplyWithdrawDeployed.test_pool_supply_withdraw_spec_1()
-    return ()
-end
+# @external
+# func test_pool_supply_withdraw_1{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+#     ):
+#     TestPoolSupplyWithdrawDeployed.test_pool_supply_withdraw_spec_1()
+#     return ()
+# end
 
-@external
-func test_pool_supply_withdraw_2{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-    ):
-    TestPoolSupplyWithdrawDeployed.test_pool_supply_withdraw_spec_2()
-    return ()
-end
+# @external
+# func test_pool_supply_withdraw_2{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+#     ):
+#     TestPoolSupplyWithdrawDeployed.test_pool_supply_withdraw_spec_2()
+#     return ()
+# end
 
-@external
-func test_pool_supply_withdraw_3{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-    ):
-    TestPoolSupplyWithdrawDeployed.test_pool_supply_withdraw_spec_3()
-    return ()
-end
+# @external
+# func test_pool_supply_withdraw_3{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+#     ):
+#     TestPoolSupplyWithdrawDeployed.test_pool_supply_withdraw_spec_3()
+#     return ()
+# end
 
-@external
-func test_pool_supply_withdraw_4{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-    ):
-    TestPoolSupplyWithdrawDeployed.test_pool_supply_withdraw_spec_4()
-    return ()
-end
+# @external
+# func test_pool_supply_withdraw_4{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+#     ):
+#     TestPoolSupplyWithdrawDeployed.test_pool_supply_withdraw_spec_4()
+#     return ()
+# end
 
-@external
-func test_owner_adds_a_new_address_as_proxy{
-    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
-}():
-    TestPoolAddressesProviderDeployed.test_owner_adds_a_new_address_as_proxy()
-    return ()
-end
+# @external
+# func test_owner_adds_a_new_address_as_proxy{
+#     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+# }():
+#     TestPoolAddressesProviderDeployed.test_owner_adds_a_new_address_as_proxy()
+#     return ()
+# end
 
-@external
-func test_owner_adds_a_new_address_with_no_proxy_and_turns_it_into_a_proxy_1{
-    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
-}():
-    TestPoolAddressesProviderDeployed.test_owner_adds_a_new_address_with_no_proxy_and_turns_it_into_a_proxy_1(
-        )
-    return ()
-end
+# @external
+# func test_owner_adds_a_new_address_with_no_proxy_and_turns_it_into_a_proxy_1{
+#     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+# }():
+#     TestPoolAddressesProviderDeployed.test_owner_adds_a_new_address_with_no_proxy_and_turns_it_into_a_proxy_1(
+#         )
+#     return ()
+# end
 
-@external
-func test_owner_adds_a_new_address_with_no_proxy_and_turns_it_into_a_proxy_2{
-    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
-}():
-    TestPoolAddressesProviderDeployed.test_owner_adds_a_new_address_with_no_proxy_and_turns_it_into_a_proxy_2(
-        )
-    return ()
-end
+# @external
+# func test_owner_adds_a_new_address_with_no_proxy_and_turns_it_into_a_proxy_2{
+#     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+# }():
+#     TestPoolAddressesProviderDeployed.test_owner_adds_a_new_address_with_no_proxy_and_turns_it_into_a_proxy_2(
+#         )
+#     return ()
+# end
 
-@external
-func test_unregister_a_proxy_address{
-    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
-}():
-    TestPoolAddressesProviderDeployed.test_unregister_a_proxy_address()
-    return ()
-end
+# @external
+# func test_unregister_a_proxy_address{
+#     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+# }():
+#     TestPoolAddressesProviderDeployed.test_unregister_a_proxy_address()
+#     return ()
+# end
 
-@external
-func test_owner_adds_a_new_address_with_proxy_and_turns_it_into_a_no_proxy{
-    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
-}():
-    TestPoolAddressesProviderDeployed.test_owner_adds_a_new_address_with_proxy_and_turns_it_into_a_no_proxy(
-        )
-    return ()
-end
+# @external
+# func test_owner_adds_a_new_address_with_proxy_and_turns_it_into_a_no_proxy{
+#     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+# }():
+#     TestPoolAddressesProviderDeployed.test_owner_adds_a_new_address_with_proxy_and_turns_it_into_a_no_proxy(
+#         )
+#     return ()
+# end
 
-@external
-func test_unregister_a_no_proxy_address{
-    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
-}():
-    TestPoolAddressesProviderDeployed.test_unregister_a_no_proxy_address()
-    return ()
-end
+# @external
+# func test_unregister_a_no_proxy_address{
+#     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+# }():
+#     TestPoolAddressesProviderDeployed.test_unregister_a_no_proxy_address()
+#     return ()
+# end
 
-@external
-func test_owner_registers_an_existing_contract_with_proxy_and_upgrade_it{
-    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
-}():
-    TestPoolAddressesProviderDeployed.test_owner_registers_an_existing_contract_with_proxy_and_upgrade_it(
-        )
-    return ()
-end
+# @external
+# func test_owner_registers_an_existing_contract_with_proxy_and_upgrade_it{
+#     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+# }():
+#     TestPoolAddressesProviderDeployed.test_owner_registers_an_existing_contract_with_proxy_and_upgrade_it(
+#         )
+#     return ()
+# end
 
-@external
-func test_owner_updates_the_implementation_of_a_proxy_which_is_already_initialized{
-    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
-}():
-    TestPoolAddressesProviderDeployed.test_owner_updates_the_implementation_of_a_proxy_which_is_already_initialized(
-        )
-    return ()
-end
+# @external
+# func test_owner_updates_the_implementation_of_a_proxy_which_is_already_initialized{
+#     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+# }():
+#     TestPoolAddressesProviderDeployed.test_owner_updates_the_implementation_of_a_proxy_which_is_already_initialized(
+#         )
+#     return ()
+# end
 
-@external
-func test_owner_updates_the_pool_configurator{
-    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
-}():
-    TestPoolAddressesProviderDeployed.test_owner_updates_the_pool_configurator()
-    return ()
-end
+# @external
+# func test_owner_updates_the_pool_configurator{
+#     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+# }():
+#     TestPoolAddressesProviderDeployed.test_owner_updates_the_pool_configurator()
+#     return ()
+# end
 
-@external
-func test_burn_wrong_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
-    ATokenModifier.test_burn_wrong_pool()
-    return ()
-end
+# @external
+# func test_burn_wrong_pool{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}():
+#     ATokenModifier.test_burn_wrong_pool()
+#     return ()
+# end
 
-@external
-func test_transfer_on_liquidation_wrong_pool{
-    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
-}():
-    ATokenModifier.test_transfer_on_liquidation_wrong_pool()
-    return ()
-end
+# @external
+# func test_transfer_on_liquidation_wrong_pool{
+#     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+# }():
+#     ATokenModifier.test_transfer_on_liquidation_wrong_pool()
+#     return ()
+# end
 
-@external
-func test_transfer_underlying_wrong_pool{
-    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
-}():
-    ATokenModifier.test_transfer_underlying_wrong_pool()
-    return ()
-end
+# @external
+# func test_transfer_underlying_wrong_pool{
+#     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+# }():
+#     ATokenModifier.test_transfer_underlying_wrong_pool()
+#     return ()
+# end
