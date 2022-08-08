@@ -38,11 +38,11 @@ func __setup__{syscall_ptr : felt*, range_check_ptr}():
         #deploy WETH/WETH, owner is deployer, supply is 0
         context.weth = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc20/presets/ERC20Mintable.cairo",  {"name":str_to_felt("WETH"),"symbol":str_to_felt("WETH"),"decimals":18,"initial_supply":{"low":0,"high":0},"recipient":ids.deployer,"owner": ids.deployer}).contract_address 
 
-        #  #deploy aDai/aDAI, owner is pool, supply is 0
-        # context.aDAI = deploy_contract("./contracts/protocol/tokenization/a_token.cairo", {"pool":context.pool,"treasury":1631863113,"underlying_asset":context.dai,"incentives_controller":43232, "a_token_decimals":18,"a_token_name":str_to_felt("aDAI"),"a_token_symbol":str_to_felt("aDAI")}).contract_address
+         #deploy aDai/aDAI, owner is pool, supply is 0
+        context.aDAI = deploy_contract("./contracts/protocol/tokenization/a_token.cairo", {"pool":context.pool,"treasury":1631863113,"underlying_asset":context.dai,"incentives_controller":43232, "a_token_decimals":18,"a_token_name":str_to_felt("aDAI"),"a_token_symbol":str_to_felt("aDAI")}).contract_address
 
-        #  #deploy aWETH/aWETH, owner is pool, supply is 0
-        # context.aWETH = deploy_contract("./contracts/protocol/tokenization/a_token.cairo", {"pool":context.pool,"treasury":1631863113,"underlying_asset":context.weth,"incentives_controller":43232, "a_token_decimals":18,"a_token_name":str_to_felt("aWETH"),"a_token_symbol":str_to_felt("aWETH")}).contract_address
+         #deploy aWETH/aWETH, owner is pool, supply is 0
+        context.aWETH = deploy_contract("./contracts/protocol/tokenization/a_token.cairo", {"pool":context.pool,"treasury":1631863113,"underlying_asset":context.weth,"incentives_controller":43232, "a_token_decimals":18,"a_token_name":str_to_felt("aWETH"),"a_token_symbol":str_to_felt("aWETH")}).contract_address
 
 
         #declare class implementation of basic_proxy_impl
@@ -79,17 +79,17 @@ func __setup__{syscall_ptr : felt*, range_check_ptr}():
     tempvar proxy
     tempvar acl
     tempvar pool_addresses_provider
-    # %{ ids.pool = context.pool %}
-    # %{ ids.dai = context.dai %}
-    # %{ ids.weth= context.weth %}
-    # %{ ids.aDAI = context.aDAI %}
-    # %{ ids.aWETH = context.aWETH %}
+    %{ ids.pool = context.pool %}
+    %{ ids.dai = context.dai %}
+    %{ ids.weth= context.weth %}
+    %{ ids.aDAI = context.aDAI %}
+    %{ ids.aWETH = context.aWETH %}
     %{ ids.proxy = context.proxy %}
     %{ ids.acl = context.acl %}
     %{ ids.pool_addresses_provider = context.pool_addresses_provider %}
 
-    # IPool.init_reserve(pool, dai, aDAI)
-    # IPool.init_reserve(pool, weth, aWETH)
+    IPool.init_reserve(pool, dai, aDAI)
+    IPool.init_reserve(pool, weth, aWETH)
     return ()
 end
 
