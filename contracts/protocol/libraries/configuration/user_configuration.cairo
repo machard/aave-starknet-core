@@ -33,7 +33,7 @@ namespace UserConfiguration:
     ):
         alloc_locals
 
-        assert_lt(borrowing, 2)  # only TURE=1/FALSE=0 values
+        BoolCompare.is_valid(borrowing)
         assert_le(reserve_index, MAX_RESERVES_COUNT)
         assert_not_zero(user_address)
 
@@ -61,7 +61,7 @@ namespace UserConfiguration:
     func set_using_as_collateral{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         user_address : felt, reserve_index : felt, using_as_collateral : felt
     ):
-        assert_lt(using_as_collateral, 2)  # only TURE=1/FALSE=0 values
+        BoolCompare.is_valid(using_as_collateral)
         assert_le(reserve_index, MAX_RESERVES_COUNT)
         assert_not_zero(user_address)
 
@@ -222,9 +222,9 @@ namespace UserConfiguration:
     # @return TRUE if the user is in isolation mode, FALSE otherwise
     # @return The address of the only asset used as collateral
     # @return The debt ceiling of the reserve
-    func get_isolation_mode_sate{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
-        user_address : felt
-    ) -> (bool : felt, asset_address : felt, ceilling : felt):
+    func get_isolation_mode_state{
+        syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+    }(user_address : felt) -> (bool : felt, asset_address : felt, ceilling : felt):
         assert_not_zero(user_address)
 
         let (is_one) = is_using_as_collateral_one(user_address)
@@ -233,7 +233,7 @@ namespace UserConfiguration:
             return (FALSE, 0, 0)
         end
 
-        let (asset_index) = get_first_asset_by_type(USING_AS_COLLATERAL_TYPE, user_address)
+        let (asset_index) = get_first_asset_by_type(user_address, USING_AS_COLLATERAL_TYPE)
         let (asset_address) = PoolStorage.reserves_list_read(asset_index)
         let (ceilling) = ReserveConfiguration.get_debt_ceiling(asset_address)
         let (is_ceilling_not_zero) = is_not_zero(ceilling)
@@ -250,7 +250,7 @@ namespace UserConfiguration:
     # @return The address of the only borrowed asset
     func get_siloed_borrowing_state{
         syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
-    }(user_address : felt, reserves_list : felt*) -> (bool : felt, asset_address : felt):
+    }(user_address : felt) -> (bool : felt, asset_address : felt):
         assert_not_zero(user_address)
 
         let (is_one) = is_borrowing_one(user_address)
@@ -259,12 +259,11 @@ namespace UserConfiguration:
             return (FALSE, 0)
         end
 
-        let (asset_index) = get_first_asset_by_type(BORROWING_TYPE, user_address)
-        let asset_address = [reserves_list + asset_index]
+        let (asset_index) = get_first_asset_by_type(user_address, BORROWING_TYPE)
+        let (asset_address) = PoolStorage.reserves_list_read(asset_index)
         let (siloed_borrowing) = ReserveConfiguration.get_siloed_borrowing(asset_address)
-        let (is_siloed_borrowing_not_zero) = is_not_zero(siloed_borrowing)
 
-        if is_siloed_borrowing_not_zero == TRUE:
+        if siloed_borrowing == TRUE:
             return (TRUE, asset_address)
         end
 
