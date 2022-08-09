@@ -50,12 +50,10 @@ namespace TestACLManager:
         %{ print("acl  = " + str(ids.acl)) %}
         %{ print("pool_addresses_provider  = " + str(ids.pool_addresses_provider)) %}
 
-        let (has_role_deployer) = IACLManager.acl_has_role(
-            acl, DEFAULT_ADMIN_ROLE, PRANK_ADMIN_ADDRESS
-        )
-        assert has_role_deployer = 1
-
-        let (has_role_user_1) = AccessControl.has_role(DEFAULT_ADMIN_ROLE, PRANK_USER_1)
+        # Check init roles
+        let (has_role_deployer) = IACLManager.has_role(acl, DEFAULT_ADMIN_ROLE, PRANK_ADMIN_ADDRESS)
+        let (has_role_user_1) = IACLManager.has_role(acl, DEFAULT_ADMIN_ROLE, PRANK_USER_1)
+        assert has_role_deployer = TRUE
         assert has_role_user_1 = FALSE
         return ()
     end
@@ -64,21 +62,17 @@ namespace TestACLManager:
         syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
     }():
         alloc_locals
-        local acl
-        local pool_addresses_provider
-        %{
-            ids.acl = context.acl
-            ids.pool_addresses_provider = context.pool_addresses_provider
-        %}
-
-        let (has_flash_borrow_admin_role) = IACLManager.acl_has_role(
+        let (local acl, local pool_addresses_provider) = get_context()
+        let (has_flash_borrow_admin_role) = IACLManager.has_role(
             acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS
         )
         assert has_flash_borrow_admin_role = FALSE
         %{ stop_prank = start_prank(ids.PRANK_ADMIN_ADDRESS, target_contract_address = ids.acl) %}
-        IACLManager.acl_grant_role(acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS)
+        IACLManager.grant_role(acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS)
         %{ stop_prank() %}
-        let (has_flash_borrow_admin_role_after) = IACLManager.acl_has_role(
+
+        # check final states
+        let (has_flash_borrow_admin_role_after) = IACLManager.has_role(
             acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS
         )
         assert has_flash_borrow_admin_role_after = TRUE
@@ -98,13 +92,12 @@ namespace TestACLManager:
         %}
 
         %{ stop_prank = start_prank(ids.PRANK_ADMIN_ADDRESS, target_contract_address = ids.acl) %}
-        IACLManager.acl_grant_role(acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS)
+        IACLManager.grant_role(acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS)
         %{ stop_prank() %}
 
         let (role) = IACLManager.is_flash_borrower(acl, FLASH_BORROWER_ADDRESS)
         assert role = FALSE
-
-        let (role_admin) = IACLManager.acl_has_role(
+        let (role_admin) = IACLManager.has_role(
             acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS
         )
         assert role_admin = TRUE
@@ -116,8 +109,7 @@ namespace TestACLManager:
 
         let (role_after) = IACLManager.is_flash_borrower(acl, FLASH_BORROWER_ADDRESS)
         assert role_after = FALSE
-
-        let (role_admin_after) = IACLManager.acl_has_role(
+        let (role_admin_after) = IACLManager.has_role(
             acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS
         )
         assert role_admin_after = TRUE
@@ -136,8 +128,7 @@ namespace TestACLManager:
             ids.pool_addresses_provider = context.pool_addresses_provider
         %}
         %{ stop_prank = start_prank(ids.PRANK_ADMIN_ADDRESS, target_contract_address = ids.acl) %}
-        IACLManager.acl_grant_role(acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS)
-        # ## end of init ###
+        IACLManager.grant_role(acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS)
 
         # check who's the admin role for flash_borrow_role
         let (admin_role_fbr) = IACLManager.get_role_admin(acl, FLASH_BORROWER_ROLE)
@@ -166,10 +157,7 @@ namespace TestACLManager:
             ids.pool_addresses_provider = context.pool_addresses_provider
         %}
         %{ stop_prank = start_prank(ids.PRANK_ADMIN_ADDRESS, target_contract_address = ids.acl) %}
-        IACLManager.acl_grant_role(acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS)
-
-        # ## end of init ###
-        # set FLASH_BORROW_ADMIN_ROLE as admin for FLASH_BORROWER_ROLE.
+        IACLManager.grant_role(acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS)
         IACLManager.set_role_admin(acl, FLASH_BORROWER_ROLE, FLASH_BORROW_ADMIN_ROLE)
         %{ stop_prank() %}
 
@@ -196,16 +184,16 @@ namespace TestACLManager:
             ids.pool_addresses_provider = context.pool_addresses_provider
         %}
         %{ stop_prank = start_prank(ids.PRANK_ADMIN_ADDRESS, target_contract_address = ids.acl) %}
-        IACLManager.acl_grant_role(acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS)
-        # ## end of init ###
-        # set FLASH_BORROW_ADMIN_ROLE as admin for FLASH_BORROWER_ROLE.
+        IACLManager.grant_role(acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS)
         IACLManager.set_role_admin(acl, FLASH_BORROWER_ROLE, FLASH_BORROW_ADMIN_ROLE)
         %{ stop_prank() %}
         %{ stop_prank_1 = start_prank(ids.FLASH_BORROW_ADMIN_ADDRESS, target_contract_address = ids.acl) %}
         IACLManager.add_flash_borrower(acl, FLASH_BORROWER_ADDRESS)
         %{ stop_prank_1() %}
 
-        let (role_admin) = IACLManager.acl_has_role(
+        # check initial states :  FLASH_BORROW_ADMIN_ADDRESS has FLASH_BORROW_ADMIN_ROLE and
+        # FLASH_BORROWER_ADDRESS is flash borrower
+        let (role_admin) = IACLManager.has_role(
             acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS
         )
         assert role_admin = TRUE
@@ -343,16 +331,15 @@ namespace TestACLManager:
             ids.pool_addresses_provider = context.pool_addresses_provider
         %}
         %{ stop_prank = start_prank(ids.PRANK_ADMIN_ADDRESS, target_contract_address = ids.acl) %}
-        IACLManager.acl_grant_role(acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS)
-        # ## end of init ###
-        # set FLASH_BORROW_ADMIN_ROLE as admin for FLASH_BORROWER_ROLE.
+        IACLManager.grant_role(acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS)
         IACLManager.set_role_admin(acl, FLASH_BORROWER_ROLE, FLASH_BORROW_ADMIN_ROLE)
         %{ stop_prank() %}
         %{ stop_prank_1 = start_prank(ids.FLASH_BORROW_ADMIN_ADDRESS, target_contract_address = ids.acl) %}
         IACLManager.add_flash_borrower(acl, FLASH_BORROWER_ADDRESS)
         # Init
 
-        let (role_admin) = IACLManager.acl_has_role(
+        # check initial state of admin and FLASH_BORROWER_ADDRESS
+        let (role_admin) = IACLManager.has_role(
             acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS
         )
         assert role_admin = TRUE
@@ -378,20 +365,21 @@ namespace TestACLManager:
             ids.pool_addresses_provider = context.pool_addresses_provider
         %}
         %{ stop_prank = start_prank(ids.PRANK_ADMIN_ADDRESS, target_contract_address = ids.acl) %}
-        IACLManager.acl_grant_role(acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS)
-        # ## end of init ###
-        # set FLASH_BORROW_ADMIN_ROLE as admin for FLASH_BORROWER_ROLE.
+        IACLManager.grant_role(acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS)
         IACLManager.set_role_admin(acl, FLASH_BORROWER_ROLE, FLASH_BORROW_ADMIN_ROLE)
 
-        let (role_admin) = IACLManager.acl_has_role(
+        # check initial state
+        let (role_admin) = IACLManager.has_role(
             acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS
         )
         assert role_admin = TRUE
 
-        IACLManager.acl_revoke_role(acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS)
+        # revoke FLASH_BORROW_ADMIN_ADDRESS of role FLASH_BORROW_ADMIN_ROLE
+        IACLManager.revoke_role(acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS)
         %{ stop_prank() %}
 
-        let (role_admin_after) = IACLManager.acl_has_role(
+        # check final state  : FLASH_BORROW_ADMIN_ADDRESS is not FLASH_BORROW_ADMIN_ROLE anymore
+        let (role_admin_after) = IACLManager.has_role(
             acl, FLASH_BORROW_ADMIN_ROLE, FLASH_BORROW_ADMIN_ADDRESS
         )
         assert role_admin_after = FALSE

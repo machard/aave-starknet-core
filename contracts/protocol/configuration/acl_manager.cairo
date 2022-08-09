@@ -4,19 +4,9 @@ from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.uint256 import Uint256
 
-from contracts.interfaces.i_a_token import IAToken
-from contracts.interfaces.i_pool_addresses_provider import IPoolAddressesProvider
-from contracts.protocol.configuration.pool_addresses_provider_library import PoolAddressesProvider
-from contracts.interfaces.i_acl_manager import IACLManager
+from openzeppelin.access.accesscontrol import AccessControl
 
-from contracts.protocol.libraries.math.wad_ray_math import RAY
-from contracts.protocol.configuration.acl_manager_library import (
-    ACLManager,
-    POOL_ADMIN_ROLE,
-    EMERGENCY_ADMIN_ROLE,
-)
-from openzeppelin.access.accesscontrol import AccessControl, AccessControl_role_admin
-from openzeppelin.utils.constants import DEFAULT_ADMIN_ROLE
+from contracts.protocol.configuration.acl_manager_library import ACLManager
 
 @constructor
 func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
@@ -27,7 +17,7 @@ func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
 end
 
 @external
-func acl_has_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+func has_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     role : felt, user : felt
 ) -> (has_role : felt):
     let (has_role) = AccessControl.has_role(role, user)
@@ -35,7 +25,7 @@ func acl_has_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_
 end
 
 @external
-func acl_grant_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+func grant_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     role : felt, user : felt
 ):
     AccessControl.grant_role(role, user)
@@ -51,7 +41,7 @@ func get_role_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_chec
 end
 
 @external
-func acl_revoke_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+func revoke_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     role : felt, user : felt
 ):
     AccessControl.revoke_role(role, user)
@@ -104,6 +94,7 @@ func remove_emergency_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ra
     ACLManager.remove_emergency_admin(admin_address)
     return ()
 end
+
 @view
 func is_emergency_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     admin_address : felt
@@ -127,6 +118,7 @@ func remove_risk_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_c
     ACLManager.remove_risk_admin(admin_address)
     return ()
 end
+
 @view
 func is_risk_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     admin_address : felt
@@ -142,6 +134,7 @@ func add_flash_borrower{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_
     ACLManager.add_flash_borrower(admin_address)
     return ()
 end
+
 @external
 func remove_flash_borrower{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     admin_address : felt
@@ -149,6 +142,7 @@ func remove_flash_borrower{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     ACLManager.remove_flash_borrower(admin_address)
     return ()
 end
+
 @view
 func is_flash_borrower{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     admin_address : felt
@@ -164,6 +158,7 @@ func add_bridge{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_pt
     ACLManager.add_bridge(admin_address)
     return ()
 end
+
 @external
 func remove_bridge{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     admin_address : felt
@@ -171,6 +166,7 @@ func remove_bridge{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check
     ACLManager.remove_bridge(admin_address)
     return ()
 end
+
 @view
 func is_bridge{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     admin_address : felt
@@ -186,6 +182,7 @@ func add_asset_listing_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, r
     ACLManager.add_asset_listing_admin(admin_address)
     return ()
 end
+
 @external
 func remove_asset_listing_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     admin_address : felt
@@ -193,10 +190,56 @@ func remove_asset_listing_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*
     ACLManager.remove_asset_listing_admin(admin_address)
     return ()
 end
+
 @view
 func is_asset_listing_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     admin_address : felt
 ) -> (has_role : felt):
     let (has_role) = ACLManager.is_asset_listing_admin(admin_address)
     return (has_role)
+end
+
+@view
+func get_addresses_provider{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    ) -> (provider_address : felt):
+    let (provider_address) = ACLManager.get_addresses_provider()
+    return (provider_address)
+end
+
+@view
+func get_pool_admin_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+    pool_admin_role : felt
+):
+    let (pool_admin_role) = ACLManager.get_pool_admin_role()
+    return (pool_admin_role)
+end
+
+@view
+func get_emergency_admin_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    ) -> (emergency_admin_role : felt):
+    let (emergency_admin_role) = ACLManager.get_emergency_admin_role()
+    return (emergency_admin_role)
+end
+
+@view
+func get_flash_borrower_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    ) -> (flash_borrower_role : felt):
+    let (flash_borrow_role) = ACLManager.get_flash_borrower_role()
+    return (flash_borrow_role)
+end
+
+@view
+func get_bridge_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+    bridge_role : felt
+):
+    let (bridge_role) = ACLManager.get_bridge_role()
+    return (bridge_role)
+end
+
+@view
+func get_asset_listing_admin_role{
+    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+}() -> (asset_listing_admin_role : felt):
+    let (asset_listing_admin_role) = ACLManager.get_asset_listing_admin_role()
+    return (asset_listing_admin_role)
 end
