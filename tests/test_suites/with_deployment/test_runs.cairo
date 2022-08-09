@@ -31,11 +31,11 @@ func __setup__{syscall_ptr : felt*, range_check_ptr}():
         context.pool = deploy_contract("./contracts/protocol/pool/pool.cairo",{"provider":0}).contract_address
 
         #deploy DAI/DAI, owner is deployer, supply is 0
-        context.dai = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc20/ERC20_Mintable.cairo",
+        context.dai = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc20/presets/ERC20Mintable.cairo",
          {"name":str_to_felt("DAI"),"symbol":str_to_felt("DAI"),"decimals":18,"initial_supply":{"low":0,"high":0},"recipient":ids.deployer,"owner": ids.deployer}).contract_address 
 
         #deploy WETH/WETH, owner is deployer, supply is 0
-        context.weth = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc20/ERC20_Mintable.cairo",  {"name":str_to_felt("WETH"),"symbol":str_to_felt("WETH"),"decimals":18,"initial_supply":{"low":0,"high":0},"recipient":ids.deployer,"owner": ids.deployer}).contract_address 
+        context.weth = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc20/presets/ERC20Mintable.cairo",  {"name":str_to_felt("WETH"),"symbol":str_to_felt("WETH"),"decimals":18,"initial_supply":{"low":0,"high":0},"recipient":ids.deployer,"owner": ids.deployer}).contract_address 
 
          #deploy aDai/aDAI, owner is pool, supply is 0
         context.aDAI = deploy_contract("./contracts/protocol/tokenization/a_token.cairo", {"pool":context.pool,"treasury":1631863113,"underlying_asset":context.dai,"incentives_controller":43232, "a_token_decimals":18,"a_token_name":str_to_felt("aDAI"),"a_token_symbol":str_to_felt("aDAI")}).contract_address
@@ -49,7 +49,7 @@ func __setup__{syscall_ptr : felt*, range_check_ptr}():
         context.implementation_hash = declare("./tests/contracts/basic_proxy_impl.cairo").class_hash
 
         # declare proxy_class_hash so that starknet knows about it. It's required to deploy proxies from PoolAddressesProvider
-        declared_proxy = declare("./lib/cairo_contracts/src/openzeppelin/upgrades/Proxy.cairo")
+        declared_proxy = declare("./lib/cairo_contracts/src/openzeppelin/upgrades/presets/Proxy.cairo")
         context.proxy_class_hash = declared_proxy.class_hash
         # deploy OZ proxy contract, admin is deployer. Implementation hash is basic_proxy_impl upon deployment.
         prepared_proxy = prepare(declared_proxy,{"implementation_hash":context.implementation_hash})

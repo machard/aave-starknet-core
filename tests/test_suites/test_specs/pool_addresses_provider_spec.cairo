@@ -130,7 +130,10 @@ namespace TestPoolAddressesProvider:
         %{ expect_events({"name": "AddressSet", "data": [context.RANDOM_NON_PROXIED,0,ids.MOCKED_CONTRACT_ADDRESS]}) %}
         let (contract_address) = get_contract_address()
         let non_proxied_address_id = 'RANDOM_NON_PROXIED'
+        PoolAddressesProvider.transfer_ownership(USER_1)
+        %{ stop_prank_user = start_prank(ids.USER_1) %}
         PoolAddressesProvider.set_address(non_proxied_address_id, MOCKED_CONTRACT_ADDRESS)
+        %{ stop_prank_user() %}
         let (address) = PoolAddressesProvider.get_address(non_proxied_address_id)
         assert address = MOCKED_CONTRACT_ADDRESS
         return ()
@@ -144,7 +147,10 @@ namespace TestPoolAddressesProvider:
         let (contract_address) = get_contract_address()
         let (old_market_id) = PoolAddressesProvider.get_market_id()
         %{ expect_events({"name": "MarketIdSet", "data": [ids.old_market_id,context.NEW_MARKET_ID]}) %}
+        PoolAddressesProvider.transfer_ownership(USER_1)
+        %{ stop_prank_user = start_prank(ids.USER_1) %}
         PoolAddressesProvider.set_market_id('NEW_MARKET_ID')
+        %{ stop_prank_user() %}
         let (new_market_id) = PoolAddressesProvider.get_market_id()
         assert new_market_id = 'NEW_MARKET_ID'
         return ()
@@ -158,7 +164,10 @@ namespace TestPoolAddressesProvider:
         %{ expect_events({"name": "PriceOracleUpdated", "data": [0,10]}) %}
         let (old_price_oracle) = PoolAddressesProvider.get_price_oracle()
         assert old_price_oracle = 0
+        PoolAddressesProvider.transfer_ownership(USER_1)
+        %{ stop_prank_user = start_prank(ids.USER_1) %}
         PoolAddressesProvider.set_price_oracle(10)
+        %{ stop_prank_user() %}
         let (new_price_oracle) = PoolAddressesProvider.get_price_oracle()
         assert new_price_oracle = 10
         return ()
@@ -172,7 +181,10 @@ namespace TestPoolAddressesProvider:
         %{ expect_events({"name": "ACLManagerUpdated", "data": [0,10]}) %}
         let (old_ACL_manager) = PoolAddressesProvider.get_ACL_manager()
         assert old_ACL_manager = 0
+        PoolAddressesProvider.transfer_ownership(USER_1)
+        %{ stop_prank_user = start_prank(ids.USER_1) %}
         PoolAddressesProvider.set_ACL_manager(10)
+        %{ stop_prank_user() %}
         let (new_ACL_manager) = PoolAddressesProvider.get_ACL_manager()
         assert new_ACL_manager = 10
         return ()
@@ -186,7 +198,10 @@ namespace TestPoolAddressesProvider:
         %{ expect_events({"name": "ACLAdminUpdated", "data": [0,10]}) %}
         let (old_ACL_admin) = PoolAddressesProvider.get_ACL_admin()
         assert old_ACL_admin = 0
+        PoolAddressesProvider.transfer_ownership(USER_1)
+        %{ stop_prank_user = start_prank(ids.USER_1) %}
         PoolAddressesProvider.set_ACL_admin(10)
+        %{ stop_prank_user() %}
         let (new_ACL_admin) = PoolAddressesProvider.get_ACL_admin()
         assert new_ACL_admin = 10
         return ()
@@ -200,7 +215,10 @@ namespace TestPoolAddressesProvider:
         %{ expect_events({"name": "PriceOracleSentinelUpdated", "data": [0,10]}) %}
         let (old_price_oracle_sentinel) = PoolAddressesProvider.get_price_oracle_sentinel()
         assert old_price_oracle_sentinel = 0
+        PoolAddressesProvider.transfer_ownership(USER_1)
+        %{ stop_prank_user = start_prank(ids.USER_1) %}
         PoolAddressesProvider.set_price_oracle_sentinel(10)
+        %{ stop_prank_user() %}
         let (price_oracle_sentinel) = PoolAddressesProvider.get_price_oracle_sentinel()
         assert price_oracle_sentinel = 10
         return ()
@@ -214,7 +232,10 @@ namespace TestPoolAddressesProvider:
         %{ expect_events({"name": "PoolDataProviderUpdated", "data": [0,10]}) %}
         let (old_pool_data_provider) = PoolAddressesProvider.get_pool_data_provider()
         assert old_pool_data_provider = 0
+        PoolAddressesProvider.transfer_ownership(USER_1)
+        %{ stop_prank_user = start_prank(ids.USER_1) %}
         PoolAddressesProvider.set_pool_data_provider(10)
+        %{ stop_prank_user() %}
         let (pool_data_provider) = PoolAddressesProvider.get_pool_data_provider()
         assert pool_data_provider = 10
         return ()
@@ -354,7 +375,7 @@ namespace TestPoolAddressesProviderDeployed:
 
         local new_proxy : felt
         # deploy a new proxy whose implementation is basic_proxy_impl v1.
-        %{ ids.new_proxy = deploy_contract("./lib/cairo_contracts/src/openzeppelin/upgrades/Proxy.cairo",{"implementation_hash":context.implementation_hash}).contract_address %}
+        %{ ids.new_proxy = deploy_contract("./lib/cairo_contracts/src/openzeppelin/upgrades/presets/Proxy.cairo",{"implementation_hash":context.implementation_hash}).contract_address %}
 
         # Initialize proxy w/ USER_2 as admin
         IProxy.initialize(new_proxy, USER_2)

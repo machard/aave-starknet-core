@@ -5,7 +5,7 @@ from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_add
 from starkware.starknet.common.syscalls import get_contract_address
 
-from openzeppelin.security.safemath import SafeUint256
+from openzeppelin.security.safemath.library import SafeUint256
 
 from contracts.protocol.libraries.math.helpers import to_uint_256
 from contracts.protocol.libraries.types.data_types import DataTypes

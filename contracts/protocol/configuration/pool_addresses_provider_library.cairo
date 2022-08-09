@@ -2,7 +2,7 @@
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.starknet.common.syscalls import deploy, get_contract_address
-from openzeppelin.access.ownable import Ownable
+from openzeppelin.access.ownable.library import Ownable
 from contracts.interfaces.i_proxy import IProxy
 
 #
@@ -131,7 +131,7 @@ namespace PoolAddressesProvider:
         market_id : felt, owner : felt, proxy_class_hash : felt
     ):
         _set_market_id(market_id)
-        Ownable.transfer_ownership(owner)
+        Ownable.initializer(owner)
         PoolAddressesProvider_proxy_class_hash.write(proxy_class_hash)
         return ()
     end
@@ -143,7 +143,7 @@ namespace PoolAddressesProvider:
     func transfer_ownership{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         new_owner : felt
     ):
-        Ownable.transfer_ownership(new_owner)
+        Ownable._transfer_ownership(new_owner)
         return ()
     end
 

@@ -6,7 +6,7 @@ from starkware.cairo.common.math import assert_not_zero
 from starkware.cairo.common.math_cmp import is_not_zero
 from starkware.cairo.common.uint256 import Uint256, uint256_eq, uint256_le, uint256_check
 
-from openzeppelin.token.erc20.interfaces.IERC20 import IERC20
+from openzeppelin.token.erc20.IERC20 import IERC20
 
 from contracts.protocol.libraries.types.data_types import DataTypes
 from contracts.protocol.libraries.helpers.helpers import is_zero
