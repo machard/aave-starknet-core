@@ -29,7 +29,7 @@ func __setup__{syscall_ptr : felt*, range_check_ptr}():
 
             return int.from_bytes(text.encode(), "big")
             
-        # context.pool = deploy_contract("./contracts/protocol/pool/pool.cairo",{"provider":0}).contract_address
+        context.pool = deploy_contract("./contracts/protocol/pool/pool.cairo",{"provider":0}).contract_address
 
         #deploy DAI/DAI, owner is deployer, supply is 0
         context.dai = deploy_contract("./lib/cairo_contracts/src/openzeppelin/token/erc20/presets/ERC20Mintable.cairo",

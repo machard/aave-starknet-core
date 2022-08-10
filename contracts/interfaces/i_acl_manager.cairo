@@ -10,7 +10,8 @@ namespace IACLManager:
     func grant_role(role : felt, user : felt):
     end
 
-    func is_asset_listing_admin(admin : felt) -> (bool : felt):
+    # added compared to original contract in solidity
+    func get_role_admin(role : felt) -> (admin : felt):
     end
 
     # added compared to original contract in solidity

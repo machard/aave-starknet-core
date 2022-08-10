@@ -173,7 +173,7 @@ namespace IncentivizedERC20:
             contract_address=address_provider
         )
         let (is_pool_admin) = IACLManager.is_pool_admin(
-            contract_address=acl_manager_address, admin=caller
+            contract_address=acl_manager_address, admin_address=caller
         )
         with_attr error_message("IncentivizedERC20: Caller is not pool admin"):
             assert is_pool_admin = TRUE
