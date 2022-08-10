@@ -2,25 +2,12 @@
 
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
-from starkware.cairo.common.uint256 import Uint256
 
-from contracts.interfaces.i_a_token import IAToken
-from contracts.interfaces.i_pool_addresses_provider import IPoolAddressesProvider
-from contracts.protocol.configuration.pool_addresses_provider_library import PoolAddressesProvider
-from contracts.interfaces.i_acl_manager import IACLManager
-
-from contracts.protocol.libraries.math.wad_ray_math import RAY
-from contracts.protocol.configuration.acl_manager_library import (
-    ACLManager,
-    POOL_ADMIN_ROLE,
-    EMERGENCY_ADMIN_ROLE,
-    FLASH_BORROWER_ROLE,
-    RISK_ADMIN_ROLE,
-    BRIDGE_ROLE,
-    ASSET_LISTING_ADMIN_ROLE,
-)
 from openzeppelin.utils.constants import DEFAULT_ADMIN_ROLE
 from openzeppelin.access.accesscontrol import AccessControl
+
+from contracts.interfaces.i_acl_manager import IACLManager
+from contracts.protocol.configuration.acl_manager_library import ACLManager, FLASH_BORROWER_ROLE
 
 const FLASH_BORROW_ADMIN_ADDRESS = 1111
 const FLASH_BORROWER_ADDRESS = 4444
@@ -36,6 +23,20 @@ const FLASH_BORROW_ADMIN_ROLE = 11
 # const FLASH_BORROWER_ROLE = 33
 const PRANK_ROLE_2 = 22
 const PRANK_ADMIN_ROLE = 99
+
+# Utils funcitons
+func get_context{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
+    acl_address : felt, pool_addresses_provider_address : felt
+):
+    alloc_locals
+    local acl
+    local pool_addresses_provider
+    %{
+        ids.acl = context.acl
+        ids.pool_addresses_provider = context.pool_addresses_provider
+    %}
+    return (acl, pool_addresses_provider)
+end
 
 namespace TestACLManager:
     func test_default_admin_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
@@ -145,6 +146,7 @@ namespace TestACLManager:
         return ()
     end
 
+    # FLASH_BORROW_ADMIN_ADDRESS grant FLASH_BORROW_ROLE
     func test_grant_flash_borrow_admin_role_4{
         syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
     }():
@@ -513,4 +515,6 @@ namespace TestACLManager:
         %{ stop_prank() %}
         return ()
     end
+
+    # TODO add one test
 end

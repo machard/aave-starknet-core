@@ -16,12 +16,15 @@ func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     return ()
 end
 
+#
+# AccessControl
+#
+
 @external
 func has_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     role : felt, user : felt
 ) -> (has_role : felt):
-    let (has_role) = AccessControl.has_role(role, user)
-    return (has_role)
+    return AccessControl.has_role(role, user)
 end
 
 @external
@@ -35,9 +38,8 @@ end
 @external
 func get_role_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     role : felt
-) -> (role_admin : felt):
-    let (role_admin) = AccessControl.get_role_admin(role)
-    return (role_admin)
+) -> (admin : felt):
+    return AccessControl.get_role_admin(role)
 end
 
 @external
@@ -47,6 +49,10 @@ func revoke_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     AccessControl.revoke_role(role, user)
     return ()
 end
+
+#
+# ACLManager
+#
 
 @external
 func set_role_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
@@ -75,8 +81,7 @@ end
 func is_pool_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     admin_address : felt
 ) -> (has_role : felt):
-    let (has_role) = ACLManager.is_pool_admin(admin_address)
-    return (has_role)
+    return ACLManager.is_pool_admin(admin_address)
 end
 
 @external
@@ -99,8 +104,7 @@ end
 func is_emergency_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     admin_address : felt
 ) -> (has_role : felt):
-    let (has_role) = ACLManager.is_emergency_admin(admin_address)
-    return (has_role)
+    return ACLManager.is_emergency_admin(admin_address)
 end
 
 @external
@@ -123,8 +127,7 @@ end
 func is_risk_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     admin_address : felt
 ) -> (has_role : felt):
-    let (has_role) = ACLManager.is_risk_admin(admin_address)
-    return (has_role)
+    return ACLManager.is_risk_admin(admin_address)
 end
 
 @external
@@ -147,8 +150,7 @@ end
 func is_flash_borrower{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     admin_address : felt
 ) -> (has_role : felt):
-    let (has_role) = ACLManager.is_flash_borrower(admin_address)
-    return (has_role)
+    return ACLManager.is_flash_borrower(admin_address)
 end
 
 @external
@@ -171,8 +173,7 @@ end
 func is_bridge{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     admin_address : felt
 ) -> (has_role : felt):
-    let (has_role) = ACLManager.is_bridge(admin_address)
-    return (has_role)
+    return ACLManager.is_bridge(admin_address)
 end
 
 @external
@@ -195,51 +196,44 @@ end
 func is_asset_listing_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     admin_address : felt
 ) -> (has_role : felt):
-    let (has_role) = ACLManager.is_asset_listing_admin(admin_address)
-    return (has_role)
+    return ACLManager.is_asset_listing_admin(admin_address)
 end
 
 @view
 func get_addresses_provider{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     ) -> (provider_address : felt):
-    let (provider_address) = ACLManager.get_addresses_provider()
-    return (provider_address)
+    return ACLManager.get_addresses_provider()
 end
 
 @view
 func get_pool_admin_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
     pool_admin_role : felt
 ):
-    let (pool_admin_role) = ACLManager.get_pool_admin_role()
-    return (pool_admin_role)
+    return ACLManager.get_pool_admin_role()
 end
 
 @view
 func get_emergency_admin_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     ) -> (emergency_admin_role : felt):
-    let (emergency_admin_role) = ACLManager.get_emergency_admin_role()
-    return (emergency_admin_role)
+    return ACLManager.get_emergency_admin_role()
 end
 
 @view
 func get_flash_borrower_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     ) -> (flash_borrower_role : felt):
-    let (flash_borrow_role) = ACLManager.get_flash_borrower_role()
-    return (flash_borrow_role)
+    return ACLManager.get_flash_borrower_role()
 end
 
 @view
 func get_bridge_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (
     bridge_role : felt
 ):
-    let (bridge_role) = ACLManager.get_bridge_role()
-    return (bridge_role)
+    return ACLManager.get_bridge_role()
 end
 
 @view
 func get_asset_listing_admin_role{
     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
 }() -> (asset_listing_admin_role : felt):
-    let (asset_listing_admin_role) = ACLManager.get_asset_listing_admin_role()
-    return (asset_listing_admin_role)
+    return ACLManager.get_asset_listing_admin_role()
 end

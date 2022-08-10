@@ -12,25 +12,24 @@ from contracts.interfaces.i_pool_addresses_provider import IPoolAddressesProvide
 from contracts.protocol.configuration.pool_addresses_provider_library import PoolAddressesProvider
 from contracts.interfaces.i_acl_manager import IACLManager
 
-# TODO replace with unsafe_keccak
-const POOL_ADMIN_ROLE = 1111  # unsafe_keccak('POOL_ADMIN', 256)
-const EMERGENCY_ADMIN_ROLE = 2222  # unsafe_keccak('EMERGENCY_ADMIN', 256)
-const RISK_ADMIN_ROLE = 3333  # unsafe_keccak('RISK_ADMIN', 256)
-const FLASH_BORROWER_ROLE = 4444  # unsafe_keccak('FLASH_BORROWER', 256)
-const BRIDGE_ROLE = 5555  # unsafe_keccak('BRIDGE', 256)
-const ASSET_LISTING_ADMIN_ROLE = 6666  # unsafe_keccak('ASSET_LISTING_ADMIN',256)
+# the 31 first characters are kept of keccak256 hash to make it short string
+const POOL_ADMIN_ROLE = '12ad05bde78c5ab75238ce885307f96'
+const EMERGENCY_ADMIN_ROLE = '5c91514091af31f62f596a314af7d5b'
+const RISK_ADMIN_ROLE = '8aa855a911518ecfbe5bc3088c8f3dd'
+const FLASH_BORROWER_ROLE = '939b8dfb57ecef2aea54a93a15e8676'
+const BRIDGE_ROLE = '08fb31c3e81624356c3314088aa971b'
+const ASSET_LISTING_ADMIN_ROLE = '19c860a63258efbd0ecb7d55c626237'
 
-# IPoolAddressesProvider public immutable ADDRESSES_PROVIDER;
 @storage_var
-func i_pool_addresses_provider() -> (addresses_provider : felt):
+func ACLManager_addresses_provider() -> (addresses_provider : felt):
 end
 
 namespace ACLManager:
     func initializer{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         provider : felt
     ):
-        i_pool_addresses_provider.write(provider)
-        let (local_provider) = i_pool_addresses_provider.read()
+        ACLManager_addresses_provider.write(provider)
+        let (local_provider) = ACLManager_addresses_provider.read()
         let (acl_admin) = IPoolAddressesProvider.get_ACL_admin(local_provider)
         assert_not_zero(acl_admin)
         AccessControl._grant_role(DEFAULT_ADMIN_ROLE, acl_admin)
@@ -62,8 +61,7 @@ namespace ACLManager:
     func is_pool_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         pool_admin_address : felt
     ) -> (has_role : felt):
-        let (has_role) = AccessControl.has_role(POOL_ADMIN_ROLE, pool_admin_address)
-        return (has_role=has_role)
+        return AccessControl.has_role(POOL_ADMIN_ROLE, pool_admin_address)
     end
 
     func add_emergency_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
@@ -83,8 +81,7 @@ namespace ACLManager:
     func is_emergency_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         emergency_admin_address : felt
     ) -> (has_role : felt):
-        let (has_role) = AccessControl.has_role(EMERGENCY_ADMIN_ROLE, emergency_admin_address)
-        return (has_role=has_role)
+        return AccessControl.has_role(EMERGENCY_ADMIN_ROLE, emergency_admin_address)
     end
 
     func add_risk_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
@@ -104,8 +101,7 @@ namespace ACLManager:
     func is_risk_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         risk_admin_address : felt
     ) -> (has_role : felt):
-        let (has_role) = AccessControl.has_role(RISK_ADMIN_ROLE, risk_admin_address)
-        return (has_role=has_role)
+        return AccessControl.has_role(RISK_ADMIN_ROLE, risk_admin_address)
     end
 
     func add_flash_borrower{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
@@ -125,8 +121,7 @@ namespace ACLManager:
     func is_flash_borrower{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         flash_borrower_address : felt
     ) -> (has_role : felt):
-        let (has_role) = AccessControl.has_role(FLASH_BORROWER_ROLE, flash_borrower_address)
-        return (has_role=has_role)
+        return AccessControl.has_role(FLASH_BORROWER_ROLE, flash_borrower_address)
     end
 
     func add_bridge{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
@@ -146,8 +141,7 @@ namespace ACLManager:
     func is_bridge{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         bridge_address : felt
     ) -> (has_role : felt):
-        let (has_role) = AccessControl.has_role(BRIDGE_ROLE, bridge_address)
-        return (has_role=has_role)
+        return AccessControl.has_role(BRIDGE_ROLE, bridge_address)
     end
 
     func add_asset_listing_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
@@ -167,15 +161,12 @@ namespace ACLManager:
     func is_asset_listing_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         asset_listing_admin_address : felt
     ) -> (has_role : felt):
-        let (has_role) = AccessControl.has_role(
-            ASSET_LISTING_ADMIN_ROLE, asset_listing_admin_address
-        )
-        return (has_role=has_role)
+        return AccessControl.has_role(ASSET_LISTING_ADMIN_ROLE, asset_listing_admin_address)
     end
 
     func get_addresses_provider{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         ) -> (provider_address : felt):
-        let (provider_address) = i_pool_addresses_provider.read()
+        let (provider_address) = ACLManager_addresses_provider.read()
         return (provider_address)
     end
 
