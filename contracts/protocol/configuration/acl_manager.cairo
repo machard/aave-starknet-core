@@ -4,8 +4,6 @@ from starkware.cairo.common.bool import FALSE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 from starkware.cairo.common.uint256 import Uint256
 
-from openzeppelin.access.accesscontrol.library import AccessControl
-
 from contracts.protocol.configuration.acl_manager_library import ACLManager
 
 @constructor
@@ -16,22 +14,18 @@ func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     return ()
 end
 
-#
-# AccessControl
-#
-
 @external
 func has_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     role : felt, user : felt
 ) -> (has_role : felt):
-    return AccessControl.has_role(role, user)
+    return ACLManager.has_role(role, user)
 end
 
 @external
 func grant_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     role : felt, user : felt
 ):
-    AccessControl.grant_role(role, user)
+    ACLManager.grant_role(role, user)
     return ()
 end
 
@@ -39,20 +33,16 @@ end
 func get_role_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     role : felt
 ) -> (admin : felt):
-    return AccessControl.get_role_admin(role)
+    return ACLManager.get_role_admin(role)
 end
 
 @external
 func revoke_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     role : felt, user : felt
 ):
-    AccessControl.revoke_role(role, user)
+    ACLManager.revoke_role(role, user)
     return ()
 end
-
-#
-# ACLManager
-#
 
 @external
 func set_role_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(

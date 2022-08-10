@@ -36,6 +36,32 @@ namespace ACLManager:
         return ()
     end
 
+    func has_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        role : felt, user : felt
+    ) -> (has_role : felt):
+        return AccessControl.has_role(role, user)
+    end
+
+    func grant_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        role : felt, user : felt
+    ):
+        AccessControl.grant_role(role, user)
+        return ()
+    end
+
+    func get_role_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        role : felt
+    ) -> (admin : felt):
+        return AccessControl.get_role_admin(role)
+    end
+
+    func revoke_role{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        role : felt, user : felt
+    ):
+        AccessControl.revoke_role(role, user)
+        return ()
+    end
+
     func set_role_admin{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
         role : felt, admin_role : felt
     ):
