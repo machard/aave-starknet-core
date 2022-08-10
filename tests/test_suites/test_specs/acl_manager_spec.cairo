@@ -4,7 +4,7 @@ from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 
 from openzeppelin.utils.constants.library import DEFAULT_ADMIN_ROLE
-from openzeppelin.access.accesscontrol import AccessControl
+from openzeppelin.access.accesscontrol.library import AccessControl
 
 from contracts.interfaces.i_acl_manager import IACLManager
 from contracts.protocol.configuration.acl_manager_library import ACLManager, FLASH_BORROWER_ROLE

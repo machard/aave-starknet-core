@@ -3,7 +3,7 @@
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 
-from openzeppelin.access.accesscontrol import AccessControl, AccessControl_role_admin
+from openzeppelin.access.accesscontrol.library import AccessControl
 from openzeppelin.utils.constants.library import DEFAULT_ADMIN_ROLE
 
 from contracts.protocol.configuration.acl_manager_library import (
@@ -35,7 +35,7 @@ func test_set_role_admin{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : Ha
     ACLManager.initializer(PRANK_PROVIDER)
     %{ stop_prank = start_prank(ids.PRANK_ADMIN_ADDRESS) %}
     ACLManager.set_role_admin(PRANK_ROLE_1, PRANK_ADMIN_ROLE)
-    let (admin_role) = AccessControl_role_admin.read(PRANK_ROLE_1)
+    let (admin_role) = AccessControl.get_role_admin(PRANK_ROLE_1)
     assert admin_role = PRANK_ADMIN_ROLE
     %{ stop_prank() %}
     %{ stop_mock_provider() %}
@@ -51,7 +51,7 @@ func test_emergency_admin_mgt{syscall_ptr : felt*, range_check_ptr, pedersen_ptr
     # Set role admin and check
     %{ stop_prank = start_prank(ids.PRANK_ADMIN_ADDRESS) %}
     ACLManager.set_role_admin(EMERGENCY_ADMIN_ROLE, DEFAULT_ADMIN_ROLE)
-    let (admin_role) = AccessControl_role_admin.read(EMERGENCY_ADMIN_ROLE)
+    let (admin_role) = AccessControl.get_role_admin(EMERGENCY_ADMIN_ROLE)
     assert admin_role = DEFAULT_ADMIN_ROLE
 
     # add emercengy admin and check role
@@ -81,7 +81,7 @@ func test_pool_admin_mgt{syscall_ptr : felt*, range_check_ptr, pedersen_ptr : Ha
     # Set role admin and check
     %{ stop_prank = start_prank(ids.PRANK_ADMIN_ADDRESS) %}
     ACLManager.set_role_admin(POOL_ADMIN_ROLE, DEFAULT_ADMIN_ROLE)
-    let (admin_role) = AccessControl_role_admin.read(POOL_ADMIN_ROLE)
+    let (admin_role) = AccessControl.get_role_admin(POOL_ADMIN_ROLE)
     assert admin_role = DEFAULT_ADMIN_ROLE
 
     # add emercengy admin and check role

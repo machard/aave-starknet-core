@@ -5,7 +5,7 @@ from starkware.cairo.common.keccak import unsafe_keccak
 from starkware.cairo.common.math import assert_not_zero
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 
-from openzeppelin.access.accesscontrol import AccessControl
+from openzeppelin.access.accesscontrol.library import AccessControl
 from openzeppelin.utils.constants.library import DEFAULT_ADMIN_ROLE
 
 from contracts.interfaces.i_pool_addresses_provider import IPoolAddressesProvider
