@@ -8,7 +8,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import split_felt
 from contracts.dependencies.stork.i_oracle_proxy import IOracleProxy
 from contracts.interfaces.i_pool_addresses_provider import IPoolAddressesProvider
-from contracts.interfaces.i_ACL_manager import IACLManager
+from contracts.interfaces.i_acl_manager import IACLManager
 from contracts.protocol.libraries.helpers.bool_cmp import BoolCompare
 from contracts.protocol.libraries.helpers.helpers import is_zero
 
