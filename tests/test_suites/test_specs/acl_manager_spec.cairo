@@ -3,7 +3,7 @@
 from starkware.cairo.common.bool import FALSE, TRUE
 from starkware.cairo.common.cairo_builtins import HashBuiltin
 
-from openzeppelin.utils.constants import DEFAULT_ADMIN_ROLE
+from openzeppelin.utils.constants.library import DEFAULT_ADMIN_ROLE
 from openzeppelin.access.accesscontrol import AccessControl
 
 from contracts.interfaces.i_acl_manager import IACLManager
