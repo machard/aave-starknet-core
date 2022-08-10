@@ -12,7 +12,7 @@ from openzeppelin.security.safemath.library import SafeUint256
 from contracts.protocol.libraries.helpers.constants import UINT128_MAX
 from contracts.protocol.libraries.math.helpers import to_felt
 from contracts.protocol.libraries.types.data_types import DataTypes
-from contracts.interfaces.i_ACL_manager import IACLManager
+from contracts.interfaces.i_acl_manager import IACLManager
 from contracts.interfaces.i_pool_addresses_provider import IPoolAddressesProvider
 from contracts.interfaces.i_aave_incentives_controller import IAaveIncentivesController
 from contracts.interfaces.i_pool import IPool
